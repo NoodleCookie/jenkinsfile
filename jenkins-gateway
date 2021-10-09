@@ -5,7 +5,7 @@ pipeline {
      }
      parameters{
         choice(
-                     description: '选择你要部署的微服务'
+                     description: '选择你要部署的微服务',
                      name: '_github_project_name',
                      choice: ['sunflower-gateway', 'sunflower-auth']
         )
