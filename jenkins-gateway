@@ -9,6 +9,11 @@ pipeline {
                      name: '_github_project_name',
                      choices: ['sunflower-gateway', 'sunflower-auth']
         )
+	choice(
+		description: '选择你要部署的服务器',
+		name: '_aliyun_server_ip',,
+		choices: ['60.205.224.166','8.140.110.215']
+	)
         string(
                      description: '端口号',
                      name: 'port',
