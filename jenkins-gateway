@@ -5,12 +5,12 @@ pipeline {
      }
      parameters{
         choice(
-                     description: '选择你要部署的微服务',
+                     description: 'select your micro server',
                      name: '_github_project_name',
                      choices: ['sunflower-gateway', 'sunflower-auth','sunflower-blog','sunflower-word']
         )
 	choice(
-		description: '选择你要部署的服务器',
+		description: 'select your aliyun server',
 		name: '_aliyun_server_ip',,
 		choices: ['60.205.224.166','8.140.110.215']
 	)
@@ -19,19 +19,24 @@ pipeline {
 		name: '_deploy_file',
 		choices: ['deploy.sh','new-deploy.sh']
 	)
+	choice(
+		description: 'select your nacos config and discovery namespace',
+		name: '_nacos_namespace',
+		choices: ['923b2ce7-8e81-4ddd-a9ee-04db4c1afd66']
+	)
         string(
-                     description: '端口号',
+                     description: 'the port which will be exposed',
                      name: 'port',
                      defaultValue: '8080'
         )
         
         string(
-                    description: '项目名称',
+                    description: 'project name',
                     name: '_project_name',
                     defaultValue: 'sunflower-gateway'
                 )
         string(
-                    description: '项目版本号',
+                    description: 'project version',
                     name: '_project_version',
                     defaultValue: '1.0'
                 )
@@ -87,7 +92,7 @@ pipeline {
                                           text: """\
                                       FROM openjdk:11
                                       COPY ./target/${_github_project_name}-1.0-SNAPSHOT.jar app.jar
-                                      CMD ["java","-jar","/app.jar","--server.port=$port","--spring.profiles.active=prod"]
+                                      CMD ["java","-jar","/app.jar","--server.port=$port","--spring.profiles.active=prod","--spring.cloud.nacos.discovery.ip=$_aliyun_server_ip","--spring.cloud.nacos.config.namespace=$_nacos_namespace","--spring.cloud.nacos.discovery.namespace=$_nacos_namespace"]
                                       """.stripIndent()
                                       )
                                       sh "cat -n Dockerfile"
