@@ -109,8 +109,6 @@ pipeline {
                              sh "chmod +x ./clean-container-image.sh"
                              sh "./clean-container-image.sh ${_project_name} ${_project_version}"
                         }
-
-
                          dir("${env.WORKSPACE}/project/${_project_name}") {
                             // 构建新镜像
                              sh "docker build -t ${_project_name}:${_project_version} ."
@@ -118,26 +116,29 @@ pipeline {
                              sh "docker tag ${_project_name}:${_project_version} ${_harbor_address}/${_harbor_project_name}/${_project_name}:${_project_version}"
                          }
                      }
+                 }
+             }
 
-                        // 推送到harbor
-                     script {
-                        withCredentials([usernamePassword(credentialsId: "${_credentialsId}", passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+	stage("Publish Image") {
+		steps {
+			script {
+				// 推送到harbor
+				withCredentials([usernamePassword(credentialsId: "${_credentialsId}", passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                             sh "docker login -u ${USERNAME} -p ${PASSWORD} ${_harbor_address}"
                             sh "docker push ${_harbor_address}/${_harbor_project_name}/${_project_name}:${_project_version}"
                         }
+			}
+		}
 
-                       // 远程部署
-                         sshPublisher(publishers: [sshPublisherDesc(configName: "${_aliyun_server_ip}", transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: "/opt/jenkins_shell/${_deploy_file} ${_harbor_address} ${_harbor_project_name} ${_project_name} ${_project_version} ${port}", execTimeout: 0, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '', usePty: true)], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
-                     }
+	}
 
-                       // 本地部署
-//                     script {
-//                       dir("/var/jenkins_home/workspace/deploy") {
-//                            sh "chmod +x ./deploy-local.sh"
-//                            sh "./deploy-local.sh ${_project_name} ${_project_version} ${port}"
-//                       }
-//                   }
-                 }
-             }
+	stage("Remote Deploy") {
+		steps {
+			script {
+				// 远程部署
+				sshPublisher(publishers: [sshPublisherDesc(configName: "${_aliyun_server_ip}", transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: "/opt/jenkins_shell/${_deploy_file} ${_harbor_address} ${_harbor_project_name} ${_project_name} ${_project_version} ${port}", execTimeout: 0, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '', usePty: true)], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+			}
+		}
+	}
     }
 }
