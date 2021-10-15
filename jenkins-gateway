@@ -99,7 +99,7 @@ pipeline {
                                 }
                              }
 
-            stage("Build Image and Publish") {
+            stage("Build Image Locally") {
                  steps {
                      script {
                         dir("/var/jenkins_home/workspace/deploy"){
