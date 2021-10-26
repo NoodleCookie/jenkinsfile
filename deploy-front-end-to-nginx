@@ -1,1 +1,42 @@
+#!bin/bash
+
+
+echo "=== deploy start ==="
+nginx -s stop
+
+rm -rf /usr/share/nginx/html
+
+echo "=== git clone... ==="
+
+git clone https://github.com/NoodleCookie/sunflower-front-end.git
+
+echo "=== git complete ==="
+
+
+
+cd sunflower-front-end
+
+npm run build
+
+echo "=== now waiting for build ... ==="
+
+sleep 60s
+
+echo "=== build complete ==="
+
+mv dist html
+
+mv html /usr/share/nginx/
+
+cd ..
+
+rm -rf sunflower-front-end
+
+echo "=== restart nginx ==="
+
+nginx
+
+nginx -s reload
+
+echo "=== deploy complete ! ==="
 
