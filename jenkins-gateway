@@ -7,7 +7,7 @@ pipeline {
         choice(
                      description: 'select your micro server',
                      name: '_github_project_name',
-                     choices: ['sunflower-gateway', 'sunflower-auth','sunflower-blog','sunflower-word']
+                     choices: ['sunflower-gateway', 'sunflower-auth','sunflower-blog','sunflower-word','sunflower-mall']
         )
 	choice(
 		description: 'select your aliyun server',
@@ -33,7 +33,7 @@ pipeline {
         choice(
 		description: 'project name',
 		name: '_project_name',
-		choices: ['sunflower-gateway', 'sunflower-auth','sunflower-blog','sunflower-word']
+		choices: ['sunflower-gateway', 'sunflower-auth','sunflower-blog','sunflower-word','sunflower-mall']
                 )
         string(
                     description: 'project version',
