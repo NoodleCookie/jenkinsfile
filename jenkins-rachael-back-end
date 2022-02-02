@@ -63,7 +63,7 @@ pipeline {
                             // 构建新镜像
                              sh "docker build -t ${_project_name}:1.0 ."
                              // push需要打上标签
-                             sh "docker tag ${_project_name}:${_project_version} ${_harbor_address}/${_harbor_project_name}/${_project_name}:${_project_version}"
+                             sh "docker tag ${_project_name}:${_project_version} ${_harbor_address}/${_harbor_project_name}/${_project_name}:1.0"
                          }
                      }
                  }
@@ -75,7 +75,7 @@ pipeline {
 				// 推送到harbor
 				withCredentials([usernamePassword(credentialsId: "${_credentialsId}", passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                             sh "docker login -u ${USERNAME} -p ${PASSWORD} ${_harbor_address}"
-                            sh "docker push ${_harbor_address}/${_harbor_project_name}/${_project_name}:${_project_version}"
+                            sh "docker push ${_harbor_address}/${_harbor_project_name}/${_project_name}:1.0"
                         }
 			}
 		}
