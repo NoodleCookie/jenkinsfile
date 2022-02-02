@@ -5,7 +5,7 @@ pipeline {
         _git_address = "https://github.com/NoodleCookie/rachael-server.git"
         _harbor_address = "150.158.17.222:85"
         _harbor_project_name = "rachael"
-       // _credentialsId = "24d1ea7f-7c07-4eea-9f84-9a6298334aea"
+        _credentialsId = "1a506a93-6f52-4dcd-b853-4b09313ab59e"
         _project_name = "rachael-server"
         port = "8080"
     }
