@@ -1,0 +1,93 @@
+pipeline {
+    agent any
+    environment {
+        _aliyun_server_ip = "150.158.17.222"
+        _git_address = "https://github.com/NoodleCookie/rachael-server.git"
+        _harbor_address = "8.140.110.215:85"
+        _harbor_project_name = "rachael"
+       // _credentialsId = "24d1ea7f-7c07-4eea-9f84-9a6298334aea"
+        _project_name = "rachael-back-end"
+        port = "8080"
+    }
+
+    stages {
+             stage('Pull') {
+                 steps{
+                     sh "rm -rf ${env.WORKSPACE}/project/${_project_name}"
+                     sh "mkdir -p ${env.WORKSPACE}/project/${_project_name}"
+                     dir("${env.WORKSPACE}/project/${_project_name}") {
+                         git "${_git_address}"
+                         }
+                    }
+                 }
+
+            stage("Build") {
+                        steps {
+                            script {
+                                dir("${env.WORKSPACE}/project/${_project_name}") {
+                                    sh "./gradlew clean build"
+                                }
+                            }
+                        }
+                    }
+
+            stage('Write Dockerfile') {
+                             steps{
+                                echo "==== Write Dockerfile start ===="
+                                 dir("${env.WORKSPACE}/project/${_project_name}") {
+                                    sh "rm -f Dockerfile"
+                                    echo "== first remove dockerfile =="
+                                     writeFile(
+                                          file: "Dockerfile",
+                                          text: """\
+                                      FROM openjdk:11
+                                      COPY ./build/libs/rachael-1.0.jar app.jar
+                                      CMD ["java","-jar","/app.jar","--server.port=$port"]
+                                      """.stripIndent()
+                                      )
+                                      sh "cat -n Dockerfile"
+                                      echo "==== Write Dockerfile finish ===="
+                                     }
+                                }
+                             }
+
+            stage("Build Image Locally") {
+                 steps {
+                     script {
+                        dir("/var/jenkins_home/workspace/deploy"){
+                            // 删除容器和镜像
+                             sh "chmod +x ./clean-container-image.sh"
+                             sh "./clean-container-image.sh ${_project_name} ${_project_version}"
+                        }
+                         dir("${env.WORKSPACE}/project/${_project_name}") {
+                            // 构建新镜像
+                             sh "docker build -t ${_project_name}:${_project_version} ."
+                             // push需要打上标签
+                             sh "docker tag ${_project_name}:${_project_version} ${_harbor_address}/${_harbor_project_name}/${_project_name}:${_project_version}"
+                         }
+                     }
+                 }
+             }
+
+	stage("Publish Image") {
+		steps {
+			script {
+				// 推送到harbor
+				withCredentials([usernamePassword(credentialsId: "${_credentialsId}", passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                            sh "docker login -u ${USERNAME} -p ${PASSWORD} ${_harbor_address}"
+                            sh "docker push ${_harbor_address}/${_harbor_project_name}/${_project_name}:${_project_version}"
+                        }
+			}
+		}
+	}
+
+	stage("Remote Deploy") {
+		steps {
+			script {
+				// 远程部署
+				sshPublisher(publishers: [sshPublisherDesc(configName: "${_aliyun_server_ip}", transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: "/opt/jenkins_shell/${_deploy_file} ${_harbor_address} ${_harbor_project_name} ${_project_name} ${_project_version} ${port}", execTimeout: 0, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '', usePty: true)], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+			}
+		}
+	}
+    }
+}
