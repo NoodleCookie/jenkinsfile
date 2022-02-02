@@ -73,10 +73,9 @@ pipeline {
 		steps {
 			script {
 				// 推送到harbor
-				withCredentials([usernamePassword(credentialsId: "${_credentialsId}", passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                            sh "docker login -u ${USERNAME} -p ${PASSWORD} ${_harbor_address}"
+
+                            sh "docker login -u Izumi -p Qwer3936134?! ${_harbor_address}"
                             sh "docker push ${_harbor_address}/${_harbor_project_name}/${_project_name}:1.0"
-                        }
 			}
 		}
 	}
