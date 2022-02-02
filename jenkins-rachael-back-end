@@ -7,7 +7,7 @@ pipeline {
         _harbor_project_name = "rachael"
         _credentialsId = "1a506a93-6f52-4dcd-b853-4b09313ab59e"
         _project_name = "rachael-server"
-        port = "8080"
+        port = "8082"
     }
 
     stages {
@@ -40,7 +40,7 @@ pipeline {
                                      writeFile(
                                           file: "Dockerfile",
                                           text: """\
-                                      FROM openjdk:11
+                                      FROM openjdk:8
                                       COPY ./build/libs/rachael-1.0.jar app.jar
                                       CMD ["java","-jar","/app.jar","--server.port=$port"]
                                       """.stripIndent()
